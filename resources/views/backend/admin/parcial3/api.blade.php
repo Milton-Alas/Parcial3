@@ -132,6 +132,12 @@
                     </div>
 
                     <div>
+                        <button onclick="video.stop()" class="btn btn-danger">
+                        <i class="bi bi-stop-fill me-1"></i> Detener
+                        </button>
+                    </div>
+
+                    <div>
                         <button onclick="video.currentTime -= 10" class="btn btn-info">
                         <i class="bi bi-rewind-fill me-1"></i> -10s
                         </button>
