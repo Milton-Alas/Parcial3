@@ -40,6 +40,7 @@
 
 <div id="divcontenedor" style="display: none">
     <section id="geolocalizacion">
+        
     </section>
 
     <section class="canvas">
@@ -269,11 +270,11 @@
         return true;
     }
 
-    <!-- Enlaces de apoyo
+    /*Enlaces de apoyo
     https://stackoverflow.com/questions/12796513/html5-canvas-to-png-file
    https://developer.mozilla.org/es/docs/Web/API/Canvas_API/Tutorial/Drawing_text
     https://developer.mozilla.org/es/docs/Web/API/Canvas_API/Tutorial/Drawing_shapes
-    -->
+    */
 </script>
 
 @stop
