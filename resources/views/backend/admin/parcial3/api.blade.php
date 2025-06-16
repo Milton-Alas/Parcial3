@@ -1,6 +1,7 @@
 @extends('backend.menus.superior')
 
 @section('content-admin-css')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 <link href="{{ asset('css/adminlte.min.css') }}" type="text/css" rel="stylesheet" />
 <link href="{{ asset('css/dataTables.bootstrap4.css') }}" type="text/css" rel="stylesheet" />
 <link href="{{ asset('css/toastr.min.css') }}" type="text/css" rel="stylesheet" />
@@ -46,7 +47,7 @@
             <div class="card-header bg-primary text-white">📍 Ubicación actual</div>
             <div class="card-body text-center">
                 <p><strong>Coordenadas:</strong> <span id="coords" class="text-muted">Cargando...</span></p>
-                <div id="map" class="rounded" style="height: 400px; max-width: 700px; margin: auto;"></div>
+               <div id="map" class="rounded" style="height: 500px; width: 100%;"></div>
             </div>
         </div>
     </section>
@@ -188,12 +189,59 @@
 @extends('backend.menus.footerjs')
 @section('archivos-js')
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="{{ asset('js/jquery.dataTables.js') }}" type="text/javascript"></script>
 <script src="{{ asset('js/dataTables.bootstrap4.js') }}" type="text/javascript"></script>
 <script src="{{ asset('js/toastr.min.js') }}" type="text/javascript"></script>
 <script src="{{ asset('js/axios.min.js') }}" type="text/javascript"></script>
 <script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
 <script src="{{ asset('js/alertaPersonalizada.js') }}"></script>
+
+<script>
+  // Fix íconos Leaflet
+  delete L.Icon.Default.prototype._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  });
+
+  let map, marker;
+
+  window.addEventListener('load', function () {
+    // Vista inicial global (mundo entero) sin centrarse
+    map = L.map("map").setView([0, 0], 2);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        // Mostrar coordenadas
+        document.getElementById("coords").textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+        // Centrar el mapa y hacer zoom cuando se obtiene la ubicación
+        map.setView([lat, lng], 15);
+
+        // Agregar marcador en ubicación actual
+        marker = L.marker([lat, lng]).addTo(map)
+          .bindPopup("¡Estás aquí!")
+          .openPopup();
+      }, function (error) {
+        document.getElementById("coords").textContent = "No disponible";
+        alert("Error al obtener la ubicación: " + error.message);
+      });
+    } else {
+      document.getElementById("coords").textContent = "No soportado";
+      alert("Tu navegador no soporta geolocalización.");
+    }
+  });
+</script>
+
 
 <script type="text/javascript">
     $(document).ready(function() {
