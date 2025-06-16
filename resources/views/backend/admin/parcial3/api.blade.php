@@ -125,8 +125,14 @@
             <div class="card-header bg-dark text-white">🎥 Reproductor de Video</div>
             <div class="card-body text-center">
                 <video id="videoPlayer" width="700" class="rounded shadow mb-3">
+                    <-- Aquí puedes agregar un video de prueba o usar uno localmente
                     <source src="{{ asset('videos/prueba.mp4') }}" type="video/mp4">
                     Tu navegador no soporta video HTML5.
+                    -->
+                    <-- Comentar para usar video localmente -->
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                            type="video/mp4">
+                
                 </video>
 
                 <div class="d-flex flex-wrap justify-content-center gap-3 mb-3" style="gap: 1.5rem;">
@@ -247,6 +253,7 @@
     $(document).ready(function() {
         document.getElementById("divcontenedor").style.display = "block";
         initializeCanvas();
+        initializeVideo();
     });
 
     let currentTool = 'pencil';
@@ -621,6 +628,201 @@ Pernite establecer las coordenadas del mouse mientras se mantiene presionado el 
             if (imageData.data[i + 3] !== 0) return false;
         }
         return true;
+    }
+
+    //API VIDEO
+    function initializeVideo() {
+        try {
+            // Elementos del DOM - Verificar que existan antes de usarlos
+            const video = document.getElementById('videoPlayer');
+            
+            // Verificar que el elemento del video exista
+            if (!video) {
+                console.error("El elemento con ID 'videoPlayer' no se encontró.");
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('No se encontró el reproductor de video en la página.');
+                }
+                return; // Sale de la función si el video no existe
+            }
+
+            // Obtener elementos de control del HTML actual
+            const volumeSlider = document.getElementById('volume');
+            const speedSelect = document.getElementById('speed');
+            const currentTimeDisplay = document.getElementById('current');
+            const durationDisplay = document.getElementById('duration');
+
+            // Verificar que los elementos principales existan
+            if (!volumeSlider || !speedSelect || !currentTimeDisplay || !durationDisplay) {
+                console.error("Algunos elementos de control del video no se encontraron.");
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('Error al inicializar controles del video.');
+                }
+                return;
+            }
+
+            // Crear los botones programáticamente basados en el HTML existente
+            const playBtn = document.querySelector('button[onclick*="play()"]');
+            const pauseBtn = document.querySelector('button[onclick*="pause()"]');
+            const stopBtn = document.querySelector('button[onclick*="stop()"]');
+            const backBtn = document.querySelector('button[onclick*="currentTime -= 10"]');
+            const forwardBtn = document.querySelector('button[onclick*="currentTime += 10"]');
+
+            // Función para formatear tiempo en MM:SS
+            function formatTime(seconds) {
+                if (isNaN(seconds)) return "00:00";
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            // Función para mostrar notificaciones (si toastr está disponible)
+            function showNotification(type, message) {
+                if (typeof toastr !== 'undefined') {
+                    toastr[type](message);
+                } else {
+                    console.log(`${type.toUpperCase()}: ${message}`);
+                }
+            }
+
+            // Manejo de errores con try-catch
+            function safeExecute(func, errorMessage) {
+                try {
+                    func();
+                } catch (error) {
+                    console.error(errorMessage, error);
+                    showNotification('error', errorMessage);
+                }
+            }
+
+            // Limpiar event listeners inline y agregar los nuevos
+            if (playBtn) {
+                // Remover el onclick inline
+                playBtn.removeAttribute('onclick');
+                playBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    safeExecute(() => {
+                        video.play();
+                        showNotification('success', 'Video reproduciendo');
+                    }, 'Error al reproducir video');
+                });
+            }
+
+            if (pauseBtn) {
+                pauseBtn.removeAttribute('onclick');
+                pauseBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    safeExecute(() => {
+                        video.pause();
+                        showNotification('info', 'Video pausado');
+                    }, 'Error al pausar video');
+                });
+            }
+
+            if (stopBtn) {
+                stopBtn.removeAttribute('onclick');
+                stopBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    safeExecute(() => {
+                        video.pause();
+                        video.currentTime = 0;
+                        showNotification('info', 'Video detenido');
+                    }, 'Error al detener el video');
+                });
+            }
+
+            if (backBtn) {
+                backBtn.removeAttribute('onclick');
+                backBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    safeExecute(() => {
+                        video.currentTime = Math.max(0, video.currentTime - 10);
+                        showNotification('info', 'Retrocedido 10 segundos');
+                    }, 'Error al retroceder video');
+                });
+            }
+
+            if (forwardBtn) {
+                forwardBtn.removeAttribute('onclick');
+                forwardBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    safeExecute(() => {
+                        video.currentTime = Math.min(video.duration || 0, video.currentTime + 10);
+                        showNotification('info', 'Adelantado 10 segundos');
+                    }, 'Error al adelantar video');
+                });
+            }
+
+            // Control de velocidad
+            speedSelect.addEventListener('change', () => {
+                safeExecute(() => {
+                    const speed = parseFloat(speedSelect.value);
+                    video.playbackRate = speed;
+                    showNotification('info', `Velocidad cambiada a ${speed}x`);
+                }, 'Error al cambiar velocidad');
+            });
+
+            // Control de volumen
+            volumeSlider.addEventListener('input', () => {
+                safeExecute(() => {
+                    const volume = parseFloat(volumeSlider.value);
+                    video.volume = volume;
+                }, 'Error al cambiar volumen');
+            });
+
+            // Event Listeners del video
+            video.addEventListener('timeupdate', () => {
+                safeExecute(() => {
+                    if (!isNaN(video.duration)) {
+                        currentTimeDisplay.textContent = Math.floor(video.currentTime);
+                        durationDisplay.textContent = Math.floor(video.duration);
+                    }
+                }, 'Error al actualizar tiempo');
+            });
+
+            video.addEventListener('loadedmetadata', () => {
+                safeExecute(() => {
+                    if (!isNaN(video.duration)) {
+                        durationDisplay.textContent = Math.floor(video.duration);
+                    }
+                }, 'Error al cargar metadatos');
+            });
+
+            video.addEventListener('play', () => {
+                console.log('Video iniciado');
+            });
+
+            video.addEventListener('pause', () => {
+                console.log('Video pausado');
+            });
+
+            video.addEventListener('ended', () => {
+                showNotification('info', 'Video finalizado');
+            });
+
+            video.addEventListener('error', (e) => {
+                console.error('Error del video:', e);
+                showNotification('error', 'Error al cargar el video');
+            });
+
+            // Inicialización
+            safeExecute(() => {
+                // Configurar volumen inicial
+                video.volume = 1;
+                volumeSlider.value = 1;
+                
+                // Configurar velocidad inicial
+                video.playbackRate = 1;
+                speedSelect.value = '1';
+                
+                console.log('Reproductor de video inicializado correctamente');
+            }, 'Error en inicialización del video');
+
+        } catch (error) {
+            console.error('Error al inicializar video:', error);
+            if (typeof toastr !== 'undefined') {
+                toastr.error('Error al inicializar el reproductor de video');
+            }
+        }
     }
 </script>
 
