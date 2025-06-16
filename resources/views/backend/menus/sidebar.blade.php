@@ -48,7 +48,18 @@
                         </p>
                     </a>
 
-                    
+
+                </li>
+                <li class="nav-item">
+
+                    <a href="{{ route('admin.workers.index') }}" target="frameprincipal" class="nav-link">
+                        <i class="far fa-edit"></i>
+                        <p>
+                            Web Worker Parcial 3
+                        </p>
+                    </a>
+
+
                 </li>
                 @endcan
 
