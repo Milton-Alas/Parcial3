@@ -58,3 +58,10 @@ Route::get('sin-permisos', [ControlController::class,'indexSinPermiso'])->name('
 Route::get('/admin/dashboard', [DashboardController::class,'vistaDashboard'])->name('admin.dashboard.index');
 
 
+Route::get('admin/api/index', function () {
+    return view('backend.admin.parcial3.api');
+})->name('admin.api.index')->middleware(['auth:sanctum']);
+
+Route::get('admin/workers/index', function () {
+    return view('backend.admin.parcial3.workers');
+})->name('admin.workers.index')->middleware(['auth:sanctum']);
