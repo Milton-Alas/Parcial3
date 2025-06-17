@@ -73,7 +73,41 @@
 <script type="text/javascript">
     $(document).ready(function() {
         document.getElementById("divcontenedor").style.display = "block";
+
+        $('#startWorker').on('click', startWorker);
     });
 </script>
+<script>
+    let worker;
 
+    function startWorker() {
+        const limit = document.getElementById('limit').value;
+        const resultBox = document.getElementById('result');
+
+        try {
+            if (worker) worker.terminate();
+
+            worker = new Worker("{{ asset('js/webWorker.js') }}");
+
+            resultBox.textContent = "Calculando, por favor espera...";
+
+            worker.postMessage(limit);
+
+            worker.onmessage = function (e) {
+                if (e.data.success) {
+                    const primes = e.data.primes;
+                    resultBox.textContent = 'Se encontraron ' + primes.length + ' números primos:\n\n' + primes.join(', ');
+                } else {
+                    resultBox.textContent = 'Error: ' + e.data.message;
+                }
+            };
+
+            worker.onerror = function (err) {
+                resultBox.textContent = 'Error en Worker: ' + err.message;
+            };
+        } catch (error) {
+            resultBox.textContent = 'Error al iniciar Worker: ' + error.message;
+        }
+    }
+</script>
 @stop

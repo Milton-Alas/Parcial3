@@ -8,6 +8,6 @@ class WorkersController extends Controller
 {
     public function index()
     {
-        return view('backend.workers');
+        return view('backend.admin.parcial3.workers');
     }
 }
