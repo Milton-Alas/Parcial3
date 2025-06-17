@@ -1,6 +1,6 @@
-### PARCIAL 3 - DTW135 CICLO I - 2025
+# PARCIAL 3 - DTW135 CICLO I - 2025
 
-Integrantes
+## Integrantes
 
 - Cristian Armando Navarro Aguilar - NA21005
 - Josué Edenilson Martínez Flores - MF22036
